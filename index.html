@@ -4,454 +4,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>أكاديمية الشهد | المنصة الذكية</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
     <style>
-        :root {
-            --primary: #fb923c;
-            --primary-dark: #f97316;
-            --bg-dark: #0f172a;
-            --card-dark: #1e293b;
-        }
-
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--bg-dark);
-            color: #f8fafc;
-            scroll-behavior: smooth;
-        }
-
-        /* Glassmorphism Effect */
-        .glass {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .section { display: none; animation: slideUp 0.5s ease-out; }
-        .section.active { display: block; }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-        .nav-link.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
-        
-        /* Neumorphic Buttons */
-        .btn-neo {
-            background: var(--primary);
-            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.3);
-            transition: all 0.3s ease;
-        }
-        .btn-neo:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251, 146, 60, 0.5); }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+        .active-tab { border-bottom: 4px solid #f97316; color: #f97316; }
+        .admin-only { display: none; }
+        .student-only { display: none; }
+        .loader { border-top-color: #f97316; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body class="bg-slate-950">
 
-    <div id="loadingOverlay" class="fixed inset-0 z-[3000] bg-slate-950 flex flex-col items-center justify-center hidden">
-        <div class="loader mb-4"></div>
-        <p class="text-orange-400 font-bold animate-pulse">جاري تحديث البيانات...</p>
+    <div id="loading" class="fixed inset-0 z-[5000] bg-slate-950 flex flex-col items-center justify-center hidden">
+        <div class="loader w-12 h-12 border-4 border-slate-700 border-t-orange-500 rounded-full mb-4"></div>
+        <p class="text-orange-500 font-bold animate-pulse">جاري تحديث المنصة...</p>
     </div>
 
-    <div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-[2000] glass px-6 py-3 rounded-full text-white shadow-2xl hidden border-orange-500/50"></div>
+    <header class="py-8 flex flex-col items-center glass border-b border-white/5 mb-8">
+        <img src="https://i.postimg.cc/qBNWWK9h/file-00000000b6f0724699170c32f51055fb-(1).png" alt="Logo" class="w-48 md:w-64 mb-4 hover:scale-105 transition duration-500">
+        <h1 class="text-2xl font-black italic">أكاديمية <span class="text-orange-500">الشهد</span></h1>
+    </header>
 
-    <nav class="fixed top-0 w-full z-[1000] glass border-b border-white/5 px-4 md:px-12 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <img src="https://i.postimg.cc/qBNWWK9h/file-00000000b6f0724699170c32f51055fb-(1).png" class="h-10 md:h-12 hover:scale-105 transition" alt="Logo">
-            <span class="hidden md:block font-extrabold text-xl tracking-tighter">أكاديمية <span class="text-orange-500">الشهد</span></span>
-        </div>
-        
-        <div id="navItems" class="hidden md:flex gap-8 font-bold text-slate-300">
-            </div>
+    <main class="max-w-6xl mx-auto px-4 pb-20">
 
-        <div class="flex items-center gap-4">
-            <button id="userTag" class="hidden md:flex items-center gap-2 glass px-4 py-2 rounded-xl text-sm border-orange-500/20">
-                <i class="fa-solid fa-circle-user text-orange-500"></i>
-                <span id="navUserName"></span>
-            </button>
-            <button onclick="toggleMobileMenu()" class="md:hidden text-2xl"><i class="fa-solid fa-bars-staggered"></i></button>
-        </div>
-    </nav>
-
-    <main class="pt-28 pb-12 px-4 md:px-12 max-w-7xl mx-auto">
-
-        <section id="landing" class="section active">
-            <div class="grid md:grid-cols-2 gap-12 items-center min-h-[70vh]">
-                <div>
-                    <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6 text-white">طريقك نحو <br><span class="text-orange-500 italic">التفوق</span> يبدأ هنا</h1>
-                    <p class="text-slate-400 text-lg mb-8 leading-relaxed">أهلاً بك في منصة الأستاذ محمد عبد العزيز. استمتع بتجربة تعليمية فريدة تعتمد على أحدث التقنيات لمتابعة مستواك الدراسي لحظة بلحظة.</p>
-                    <div class="flex gap-4">
-                        <button onclick="showSection('login')" class="btn-neo px-8 py-4 rounded-2xl font-bold text-white">ابدأ رحلتك الآن</button>
-                        <button onclick="window.open('https://wa.me/201277723926')" class="glass px-8 py-4 rounded-2xl font-bold border-white/10 hover:bg-white/5">تواصل معنا</button>
-                    </div>
-                </div>
-                <div class="relative hidden md:block">
-                    <div class="absolute inset-0 bg-orange-500/20 blur-[120px] rounded-full"></div>
-                    <img src="https://cdn-icons-png.flaticon.com/512/3449/3449444.png" class="relative z-10 animate-bounce-slow" style="animation: bounce 6s infinite">
-                </div>
+        <section id="loginSec" class="max-w-md mx-auto mt-10">
+            <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
+                <h2 class="text-center text-2xl font-bold mb-6">تسجيل الدخول</h2>
+                <input type="text" id="userInp" placeholder="اسم المستخدم" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl mb-4 focus:border-orange-500 outline-none">
+                <input type="password" id="passInp" placeholder="كلمة المرور" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl mb-6 focus:border-orange-500 outline-none">
+                <button onclick="login()" class="w-full bg-orange-600 hover:bg-orange-500 py-4 rounded-2xl font-bold text-lg transition">دخول للمنصة</button>
             </div>
         </section>
 
-        <section id="login" class="section">
-            <div class="max-w-md mx-auto glass p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl"></div>
-                <h2 class="text-3xl font-black mb-2 text-center">تسجيل الدخول</h2>
-                <p class="text-slate-400 text-center mb-8">ادخل بياناتك للوصول إلى دروسك</p>
-                
-                <div class="space-y-5">
-                    <div class="relative">
-                        <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                        <input type="text" id="username" class="w-full bg-slate-900/50 border border-white/10 p-4 pl-12 rounded-2xl outline-none focus:border-orange-500/50 transition" placeholder="اسم المستخدم">
-                    </div>
-                    <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                        <input type="password" id="password" class="w-full bg-slate-900/50 border border-white/10 p-4 pl-12 rounded-2xl outline-none focus:border-orange-500/50 transition" placeholder="كلمة المرور">
-                    </div>
-                    <button onclick="handleLogin()" id="loginBtn" class="w-full btn-neo py-4 rounded-2xl font-bold text-lg mt-4">دخول للمنصة</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="lessons" class="section">
-            <div class="flex justify-between items-end mb-10">
-                <div>
-                    <h2 class="text-3xl font-black text-white">حصص الأكاديمية</h2>
-                    <p class="text-slate-400">تابع دروسك المسجلة بجودة عالية</p>
-                </div>
-                <div class="glass px-4 py-2 rounded-xl text-orange-500 font-bold text-sm" id="lessonCount">0 حصة</div>
-            </div>
-            <div id="lessonsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-            
-            <div id="videoContainer" class="hidden fixed inset-0 z-[2000] bg-black/95 flex flex-col items-center justify-center p-4">
-                <button onclick="closeVideo()" class="absolute top-8 right-8 text-4xl text-white/50 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-                <div id="videoPlayer" class="w-full max-w-5xl aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10"></div>
-                <h3 id="videoTitle" class="mt-6 text-2xl font-bold text-orange-500"></h3>
-            </div>
-        </section>
-
-        <section id="exams" class="section">
-            <h2 class="text-3xl font-black mb-2">الاختبارات الإلكترونية</h2>
-            <p class="text-slate-400 mb-10">اختبر معلوماتك واحصل على تقييم فوري</p>
-            <div id="examsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-        </section>
-
-        <section id="examRoom" class="section">
-            <div class="max-w-4xl mx-auto">
-                <div class="glass p-6 rounded-3xl mb-8 flex justify-between items-center border-orange-500/30">
-                    <div>
-                        <h2 id="currentExamTitle" class="text-2xl font-black text-orange-500"></h2>
-                        <p id="qProgress" class="text-slate-400 text-sm mt-1"></p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-right">
-                            <p class="text-xs text-slate-500 uppercase font-bold">الوقت المتبقي</p>
-                            <p id="timeLeft" class="text-2xl font-black font-mono text-white"></p>
-                        </div>
-                        <i class="fa-solid fa-clock-rotate-left text-3xl text-orange-500 animate-pulse"></i>
-                    </div>
-                </div>
-                
-                <div id="questionsArea" class="space-y-6"></div>
-                
-                <div class="mt-12 flex justify-center">
-                    <button onclick="confirmSubmit()" class="btn-neo px-12 py-5 rounded-2xl font-black text-xl shadow-orange-500/20">إنهاء الاختبار وإرسال النتائج</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="profile" class="section">
-            <div class="max-w-2xl mx-auto glass p-10 rounded-[3rem] border-white/5 relative overflow-hidden text-center">
-                <div class="w-24 h-24 bg-orange-500 rounded-full mx-auto mb-6 flex items-center justify-center text-4xl font-black shadow-2xl shadow-orange-500/40" id="userInitial"></div>
-                <h2 id="stName" class="text-3xl font-black mb-2"></h2>
-                <div id="stRole" class="inline-block px-4 py-1 rounded-full bg-orange-500/10 text-orange-500 text-sm font-bold mb-8"></div>
-                
-                <div class="grid grid-cols-2 gap-4 mb-10">
-                    <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5">
-                        <p class="text-slate-500 text-sm mb-1 font-bold">المجموعة الدراسية</p>
-                        <p id="stGroup" class="text-xl font-bold"></p>
-                    </div>
-                    <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5">
-                        <p class="text-slate-500 text-sm mb-1 font-bold">الترتيب الحالي</p>
-                        <p id="stRank" class="text-xl font-bold text-orange-500"></p>
-                    </div>
+        <section id="dashboard" class="hidden">
+            <div id="nav" class="flex justify-center gap-4 mb-8 overflow-x-auto py-2 no-scrollbar">
                 </div>
 
-                <button onclick="logout()" class="w-full py-4 rounded-2xl font-bold text-red-400 border border-red-400/20 hover:bg-red-400/10 transition">تسجيل الخروج من المنصة</button>
+            <div id="tab-users" class="tab-content hidden space-y-6">
+                <div class="glass p-6 rounded-3xl">
+                    <h3 class="text-xl font-bold mb-4 text-orange-500">إضافة طالب جديد</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <input id="new_name" type="text" placeholder="الاسم الكامل" class="bg-slate-900 p-3 rounded-xl border border-white/10">
+                        <input id="new_user" type="text" placeholder="اسم المستخدم" class="bg-slate-900 p-3 rounded-xl border border-white/10">
+                        <input id="new_pass" type="text" placeholder="كلمة المرور" class="bg-slate-900 p-3 rounded-xl border border-white/10">
+                        <button onclick="api('addUser')" class="bg-green-600 p-3 rounded-xl font-bold">حفظ الطالب</button>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-3xl overflow-x-auto">
+                    <table class="w-full text-right">
+                        <thead><tr class="border-b border-white/10 text-slate-400"><th class="p-3">الطالب</th><th>الحالة</th><th>الترتيب</th><th>إجراء</th></tr></thead>
+                        <tbody id="usersList"></tbody>
+                    </table>
+                </div>
             </div>
-        </section>
 
+            <div id="tab-lessons" class="tab-content hidden">
+                <div class="admin-only glass p-6 rounded-3xl mb-8">
+                    <h3 class="text-xl font-bold mb-4">نشر حصة جديدة</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <input id="less_title" type="text" placeholder="عنوان الدرس" class="bg-slate-900 p-3 rounded-xl border border-white/10">
+                        <input id="less_url" type="text" placeholder="رابط يوتيوب" class="bg-slate-900 p-3 rounded-xl border border-white/10">
+                        <button onclick="api('addLesson')" class="bg-orange-600 p-3 rounded-xl font-bold md:col-span-2">نشر الآن</button>
+                    </div>
+                </div>
+                <div id="lessonsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <div id="tab-exams" class="tab-content hidden">
+                <div class="admin-only glass p-6 rounded-3xl mb-8">
+                    <h3 class="text-xl font-bold mb-4">إضافة اختبار Microsoft Forms</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <input id="exam_title" type="text" placeholder="اسم الاختبار" class="bg-slate-900 p-3 rounded-xl border border-white/10">
+                        <input id="exam_url" type="text" placeholder="رابط الفورم" class="bg-slate-900 p-3 rounded-xl border border-white/10">
+                        <button onclick="api('addExam')" class="bg-purple-600 p-3 rounded-xl font-bold md:col-span-2">إضافة الاختبار</button>
+                    </div>
+                </div>
+                <div id="examsGrid" class="space-y-4"></div>
+            </div>
+
+            <div id="tab-rank" class="tab-content hidden max-w-2xl mx-auto">
+                <h2 class="text-3xl font-black text-center mb-8">أبطال <span class="text-orange-500">الأكاديمية</span></h2>
+                <div id="rankingList" class="space-y-4"></div>
+            </div>
+
+            <div id="tab-complaints" class="tab-content hidden">
+                <div class="student-only glass p-8 rounded-[2.5rem] max-w-lg mx-auto text-center">
+                    <h2 class="text-2xl font-bold mb-4">هل لديك شكوى أو مقترح؟</h2>
+                    <textarea id="comp_text" rows="4" class="w-full bg-slate-900 rounded-2xl p-4 border border-white/10 outline-none mb-4" placeholder="اكتب ما يدور في ذهنك هنا..."></textarea>
+                    <button onclick="api('sendComplaint')" class="w-full bg-red-600 py-4 rounded-2xl font-bold">إرسال للمستر</button>
+                </div>
+                <div class="admin-only space-y-4" id="complaintsList"></div>
+            </div>
+
+        </section>
     </main>
 
-    <div id="mobileMenu" class="fixed inset-0 z-[1500] bg-slate-950/95 backdrop-blur-xl hidden flex-col items-center justify-center gap-8 text-2xl font-black">
-        <button onclick="toggleMobileMenu()" class="absolute top-8 right-8 text-slate-500"><i class="fa-solid fa-xmark"></i></button>
-        <a href="#" onclick="showSection('landing'); toggleMobileMenu()">الرئيسية</a>
-        <div id="mobileLinks" class="flex flex-col items-center gap-8"></div>
-    </div>
-
     <script>
-        // ضع الرابط الخاص بك هنا
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDgjvXncXM3RuNgkkoHd2leV7P9DThkyYVLmsi8P2EkROYf5nUf60a5wNtJyCZzJw2/exec";
-        
-        let allData = { lessons: [], exams: [], questions: [] };
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhQLJi3ZOp89Yi2byOaZ3lq2ihGx6jNRrbOCQht81DwtRogbbjk6CmwyR2vSXY0I9y/exec";
         let currentUser = null;
-        let examTimer;
+        let allData = {};
 
-        // UI Core
-        function toggleMobileMenu() {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        }
-
-        function showSection(id) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            
-            // Update Nav Active State
-            document.querySelectorAll('.nav-link').forEach(l => {
-                l.classList.toggle('active', l.dataset.section === id);
-            });
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function toast(msg, isError = false) {
-            const t = document.getElementById('toast');
-            t.innerHTML = `<i class="fa-solid ${isError ? 'fa-triangle-exclamation text-red-500' : 'fa-circle-check text-green-500'} ml-2"></i> ${msg}`;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 4000);
-        }
-
-        function toggleLoading(show) {
-            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
-        }
-
-        // Authentication
-        async function handleLogin() {
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            if(!u || !p) return toast("يرجى إدخال اسم المستخدم وكلمة المرور", true);
-
-            toggleLoading(true);
+        async function login() {
+            toggleLoad(true);
+            const u = document.getElementById('userInp').value;
+            const p = document.getElementById('passInp').value;
             try {
-                const res = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Added for handling Google Apps Script CORS issues
-                    body: JSON.stringify({ action: 'login', u, p })
-                });
-                
-                // Note: GAS CORS workarounds usually require fetching then checking. 
-                // Since 'no-cors' doesn't return body, we use a different approach:
-                // We'll perform a standard fetch and handle the error if it fails.
-                const realRes = await fetch(SCRIPT_URL + "?action=login&u=" + encodeURIComponent(u) + "&p=" + encodeURIComponent(p));
-                const data = await realRes.json();
-
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'login', u, p }) });
+                const data = await res.json();
                 if(data.status === 'success') {
                     currentUser = data.user;
-                    localStorage.setItem('alshahd_v2_user', JSON.stringify(currentUser));
-                    await initPlatform();
-                } else {
-                    toast("بيانات الدخول غير صحيحة، تأكد من كلمة المرور", true);
-                }
-            } catch (e) {
-                toast("حدث خطأ في الاتصال بالسيرفر", true);
-            } finally {
-                toggleLoading(false);
-            }
+                    initDashboard();
+                } else if(data.status === 'blocked') { alert(data.msg); }
+                else { alert("بيانات خاطئة"); }
+            } catch(e) { console.error(e); }
+            toggleLoad(false);
         }
 
-        async function initPlatform() {
-            toggleLoading(true);
-            try {
-                const res = await fetch(SCRIPT_URL + "?action=getData");
-                allData = await res.json();
-                
-                updateUI();
-                showSection('lessons');
-            } catch (e) {
-                toast("فشل في مزامنة البيانات من جوجل شيت", true);
-            } finally {
-                toggleLoading(false);
-            }
+        async function initDashboard() {
+            document.getElementById('loginSec').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            await refreshData();
+            renderNav();
+            showTab('tab-lessons');
         }
 
-        function updateUI() {
-            // Update Header & Profile
-            document.getElementById('userTag').classList.remove('hidden');
-            document.getElementById('navUserName').innerText = currentUser.name;
-            document.getElementById('stName').innerText = currentUser.name;
-            document.getElementById('stGroup').innerText = currentUser.group;
-            document.getElementById('stRank').innerText = "#" + currentUser.rank;
-            document.getElementById('stRole').innerText = currentUser.role === 'admin' ? 'مسؤول المنصة' : 'طالب';
-            document.getElementById('userInitial').innerText = currentUser.name.charAt(0);
+        async function refreshData() {
+            const res = await fetch(SCRIPT_URL + "?action=getData");
+            allData = await res.json();
+            renderContent();
+        }
 
-            // Menu Items
-            const menuHtml = `
-                <a href="#" class="nav-link" onclick="showSection('lessons')" data-section="lessons">الحصص</a>
-                <a href="#" class="nav-link" onclick="showSection('exams')" data-section="exams">الاختبارات</a>
-                <a href="#" class="nav-link" onclick="showSection('profile')" data-section="profile">حسابي</a>
+        function renderNav() {
+            const isAdmin = currentUser.role === 'admin';
+            const nav = document.getElementById('nav');
+            let tabs = `
+                <button onclick="showTab('tab-lessons')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap active-tab">الحصص</button>
+                <button onclick="showTab('tab-exams')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">الاختبارات</button>
+                <button onclick="showTab('tab-rank')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">المتفوقين</button>
+                <button onclick="showTab('tab-complaints')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">${isAdmin ? 'الشكاوى' : 'شكوى'}</button>
             `;
-            document.getElementById('navItems').innerHTML = menuHtml;
-            document.getElementById('mobileLinks').innerHTML = menuHtml;
-
-            renderLessons();
-            renderExams();
+            if(isAdmin) tabs = `<button onclick="showTab('tab-users')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">الطلاب</button>` + tabs;
+            nav.innerHTML = tabs;
+            
+            document.querySelectorAll(isAdmin ? '.admin-only' : '.student-only').forEach(el => el.style.display = 'block');
         }
 
-        // Lessons Logic
-        function renderLessons() {
-            const grid = document.getElementById('lessonsGrid');
-            document.getElementById('lessonCount').innerText = allData.lessons.length + " حصة";
-            
-            grid.innerHTML = allData.lessons.map(l => `
-                <div class="group glass p-4 rounded-[2rem] border-white/5 hover:border-orange-500/30 transition-all cursor-pointer" onclick="openVideo('${l[1]}', '${l[0]}')">
-                    <div class="relative aspect-video rounded-2xl overflow-hidden mb-4">
-                        <img src="https://img.youtube.com/vi/${l[1]}/mqdefault.jpg" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                            <i class="fa-solid fa-play text-4xl text-white"></i>
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-tab'));
+            event.currentTarget.classList.add('active-tab');
+        }
+
+        function renderContent() {
+            // رندر الحصص
+            document.getElementById('lessonsGrid').innerHTML = allData.lessons.map(l => `
+                <div class="glass p-4 rounded-3xl overflow-hidden group">
+                    <div class="relative mb-4 overflow-hidden rounded-2xl aspect-video">
+                        <img src="https://img.youtube.com/vi/${getVidId(l.url)}/mqdefault.jpg" class="w-full object-cover">
+                        <div onclick="openLesson('${l.url}', '${l.title}')" class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                            <i class="fa-solid fa-play text-4xl"></i>
                         </div>
                     </div>
-                    <h3 class="font-bold text-slate-200 px-2 line-clamp-1">${l[0]}</h3>
+                    <h4 class="font-bold">${l.title}</h4>
+                    ${currentUser.role === 'admin' ? `<p class="text-xs text-slate-500 mt-2">شاهده: ${l.viewers.split(',').length - 1} طلاب</p>` : ''}
                 </div>
             `).join('');
-        }
 
-        function openVideo(id, title) {
-            document.getElementById('videoContainer').classList.remove('hidden');
-            document.getElementById('videoTitle').innerText = title;
-            document.getElementById('videoPlayer').innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-        }
+            // رندر الاختبارات
+            document.getElementById('examsGrid').innerHTML = allData.exams.map(e => `
+                <div class="glass p-6 rounded-2xl flex justify-between items-center">
+                    <span class="font-bold">${e.title}</span>
+                    <button onclick="openExam('${e.url}', '${e.title}', '${e.takers}')" class="bg-purple-600 px-6 py-2 rounded-xl text-sm font-bold">دخول</button>
+                </div>
+            `).join('');
 
-        function closeVideo() {
-            document.getElementById('videoContainer').classList.add('hidden');
-            document.getElementById('videoPlayer').innerHTML = "";
-        }
-
-        // Exams Logic
-        function renderExams() {
-            const grid = document.getElementById('examsGrid');
-            grid.innerHTML = allData.exams.map(e => `
-                <div class="glass p-8 rounded-[2.5rem] flex justify-between items-center group border-white/5 hover:bg-orange-500/5 transition">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-                            <h3 class="text-xl font-bold">${e[1]}</h3>
-                        </div>
-                        <p class="text-slate-500 font-bold text-sm"><i class="fa-solid fa-hourglass-half ml-1"></i> مدة الاختبار: ${e[2]} دقيقة</p>
+            // رندر المتفوقين
+            document.getElementById('rankingList').innerHTML = allData.users
+                .filter(u => u.rank > 0)
+                .sort((a,b) => a.rank - b.rank)
+                .map(u => `
+                    <div class="glass p-4 rounded-2xl flex justify-between items-center border-r-4 ${u.rank == 1 ? 'border-yellow-500' : 'border-orange-500'}">
+                        <span class="font-bold">#${u.rank} - ${u.name}</span>
+                        <span class="text-slate-400 text-sm">${u.group}</span>
                     </div>
-                    <button onclick="startExam('${e[0]}')" class="bg-white/5 hover:bg-orange-500 hover:text-white p-4 rounded-2xl transition group-hover:scale-110">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
+                `).join('');
 
-        function startExam(id) {
-            const exam = allData.exams.find(x => x[0] == id);
-            const questions = allData.questions.filter(q => q[0] == id);
-            
-            if(questions.length === 0) return toast("هذا الاختبار لا يحتوي على أسئلة حالياً", true);
-
-            document.getElementById('currentExamTitle').innerText = exam[1];
-            document.getElementById('qProgress').innerText = `عدد الأسئلة: ${questions.length}`;
-            showSection('examRoom');
-            
-            let time = exam[2] * 60;
-            examTimer = setInterval(() => {
-                let m = Math.floor(time / 60);
-                let s = time % 60;
-                document.getElementById('timeLeft').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-                if(time <= 0) {
-                    clearInterval(examTimer);
-                    submitExam();
-                }
-                time--;
-            }, 1000);
-
-            document.getElementById('questionsArea').innerHTML = questions.map((q, i) => `
-                <div class="glass p-8 rounded-[2rem] border-white/5">
-                    <p class="text-xl font-bold mb-6 text-slate-200">س${i+1}: ${q[1]}</p>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        ${[2,3,4,5].map(idx => q[idx] ? `
-                            <label class="flex items-center gap-4 p-4 rounded-2xl bg-slate-900/40 border border-white/5 cursor-pointer hover:border-orange-500/50 transition has-[:checked]:border-orange-500 has-[:checked]:bg-orange-500/10">
-                                <input type="radio" name="q${i}" value="${idx-1}" class="w-5 h-5 accent-orange-500">
-                                <span class="font-semibold text-slate-300">${q[idx]}</span>
-                            </label>
-                        ` : '').join('')}
-                    </div>
-                </div>
-            `).join('');
-            
-            window.activeExam = { title: exam[1], questions };
-        }
-
-        function confirmSubmit() {
-            if(confirm("هل أنت متأكد من رغبتك في إنهاء الاختبار؟")) submitExam();
-        }
-
-        async function submitExam() {
-            clearInterval(examTimer);
-            toggleLoading(true);
-
-            let score = 0;
-            const data = window.activeExam;
-            
-            data.questions.forEach((q, i) => {
-                const selected = document.querySelector(`input[name="q${i}"]:checked`);
-                if(selected && selected.value == q[6]) score++;
-            });
-
-            const finalPercent = Math.round((score / data.questions.length) * 100);
-            
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ 
-                        action: 'submitScore', 
-                        name: currentUser.name, 
-                        exam: data.title, 
-                        score: finalPercent 
-                    })
-                });
-                alert(`انتهى الاختبار! درجتك هي: ${finalPercent}% \n تم إرسال نتيجتك للمستر بنجاح.`);
-                showSection('profile');
-            } catch (e) {
-                toast("حدث خطأ أثناء إرسال الدرجة، تواصل مع الدعم", true);
-            } finally {
-                toggleLoading(false);
+            // رندر الطلاب (للمدير)
+            if(currentUser.role === 'admin') {
+                document.getElementById('usersList').innerHTML = allData.users.map(u => `
+                    <tr class="border-b border-white/5">
+                        <td class="p-3">${u.name}</td>
+                        <td><span class="px-2 py-1 rounded-lg text-xs ${u.status === 'Active' ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'}">${u.status}</span></td>
+                        <td><input type="number" onchange="updateRank('${u.user}', this.value)" value="${u.rank}" class="w-12 bg-slate-900 rounded border border-white/10 text-center"></td>
+                        <td><button onclick="toggleStatus('${u.user}', '${u.status}')" class="text-orange-500"><i class="fa-solid fa-power-off"></i></button></td>
+                    </tr>
+                `).join('');
             }
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
+        async function api(action) {
+            toggleLoad(true);
+            let payload = { action };
+            if(action === 'addUser') payload = {...payload, name:v('new_name'), user:v('new_user'), pass:v('new_pass'), group: 'عام'};
+            if(action === 'addLesson') payload = {...payload, title:v('less_title'), url:v('less_url')};
+            if(action === 'addExam') payload = {...payload, title:v('exam_title'), url:v('exam_url')};
+            if(action === 'sendComplaint') payload = {...payload, text:v('comp_text'), user: currentUser.name};
+
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            await refreshData();
+            toggleLoad(false);
+            alert("تمت العملية بنجاح");
         }
 
-        // Auto Load
-        window.onload = () => {
-            const saved = localStorage.getItem('alshahd_v2_user');
-            if(saved) {
-                currentUser = JSON.parse(saved);
-                initPlatform();
+        function openExam(url, title, takers) {
+            if(takers.includes(currentUser.user)) {
+                alert("عذراً، قمت بدخول هذا الاختبار مسبقاً.");
+            } else {
+                window.open(url, "_blank");
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'markExamTaken', examTitle: title, user: currentUser.user }) });
             }
-        };
+        }
+
+        function openLesson(url, title) {
+            window.open(url, "_blank");
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'markLessonWatched', lessonTitle: title, user: currentUser.user }) });
+        }
+
+        function toggleLoad(s) { document.getElementById('loading').classList.toggle('hidden', !s); }
+        function v(id) { return document.getElementById(id).value; }
+        function getVidId(url) { return url.split('v=')[1] || url.split('/').pop(); }
     </script>
 </body>
 </html>
