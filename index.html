@@ -10,19 +10,24 @@
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: #f8fafc; overflow: hidden; }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-        .sidebar { transition: all 0.3s ease; width: 260px; }
-        @media (max-width: 768px) { .sidebar { width: 0; overflow: hidden; position: fixed; z-index: 100; height: 100%; } .sidebar.open { width: 260px; } }
-        .active-link { background: #f97316; color: white; border-radius: 12px; }
-        .video-container iframe { width: 100%; aspect-ratio: 16/9; border-radius: 20px; }
+        .sidebar { transition: all 0.3s ease-in-out; width: 260px; position: relative; z-index: 1000; }
+        @media (max-width: 768px) { 
+            .sidebar { position: fixed; right: -260px; height: 100%; width: 260px; }
+            .sidebar.open { right: 0; }
+        }
+        .active-link { background: #f97316 !important; color: white !important; }
+        .video-container iframe { width: 100%; aspect-ratio: 16/9; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .page-content { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <nav class="h-20 glass border-b border-white/10 flex items-center justify-between px-6 z-50">
+    <nav class="h-20 glass border-b border-white/10 flex items-center justify-between px-6 z-[1100]">
         <div class="flex items-center gap-4">
-            <button onclick="toggleSidebar()" class="md:hidden text-2xl"><i class="fa-solid fa-bars"></i></button>
-            <img src="https://i.postimg.cc/qBNWWK9h/file-00000000b6f0724699170c32f51055fb-(1).png" class="h-14 md:h-16" alt="Logo">
+            <button onclick="toggleSidebar()" class="md:hidden text-2xl text-orange-500"><i class="fa-solid fa-bars"></i></button>
+            <img src="https://i.postimg.cc/qBNWWK9h/file-00000000b6f0724699170c32f51055fb-(1).png" class="h-12 md:h-14" alt="Logo">
         </div>
         <div id="userBadge" class="hidden flex items-center gap-3 glass px-4 py-2 rounded-full border-orange-500/30">
             <span id="userNameDisplay" class="font-bold text-sm"></span>
@@ -31,179 +36,200 @@
     </nav>
 
     <div class="flex flex-1 overflow-hidden">
-        <aside id="sidebar" class="sidebar glass border-l border-white/10 p-4 flex flex-col gap-2 overflow-y-auto h-full">
+        <aside id="sidebar" class="sidebar glass border-l border-white/10 p-4 flex flex-col gap-2 overflow-y-auto">
             <div id="guestLinks" class="space-y-2">
-                <button onclick="showPage('landing')" class="nav-link w-full text-right p-3 flex items-center gap-3 active-link"><i class="fa-solid fa-house"></i> عن المستر</button>
-                <button onclick="showPage('loginSec')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول</button>
-                <button onclick="window.open('https://wa.me/201277723926')" class="w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-comments"></i> تواصل معنا</button>
+                <button onclick="showPage('landing')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 active-link"><i class="fa-solid fa-star"></i> عن المستر</button>
+                <button onclick="showPage('loginSec')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول</button>
+                <button onclick="window.open('https://wa.me/201277723926')" class="w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-headset"></i> تواصل معنا</button>
             </div>
+            
             <div id="authLinks" class="hidden space-y-2">
-                <div class="student-only">
-                    <button onclick="showPage('tab-lessons')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-play"></i> الحصص</button>
-                    <button onclick="showPage('tab-exams')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-file-lines"></i> الاختبارات</button>
-                    <button onclick="showPage('tab-rank')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-trophy"></i> الصدارة</button>
-                    <button onclick="showPage('tab-profile')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-user"></i> حسابي</button>
-                    <button onclick="showPage('tab-complaints')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-headset"></i> الشكاوى</button>
+                <div id="studentMenu" class="hidden space-y-2">
+                    <button onclick="showPage('tab-lessons')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-play"></i> الحصص</button>
+                    <button onclick="showPage('tab-exams')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-pen-to-square"></i> الاختبارات</button>
+                    <button onclick="showPage('tab-rank')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-trophy"></i> الأبطال</button>
+                    <button onclick="showPage('tab-profile')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-user-gear"></i> حسابي</button>
                 </div>
-                <div class="admin-only">
-                    <button onclick="showPage('tab-users')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-users-gear"></i> إدارة الطلاب</button>
-                    <button onclick="showPage('tab-lessons')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-video"></i> نشر الحصص</button>
-                    <button onclick="showPage('tab-complaints')" class="nav-link w-full text-right p-3 flex items-center gap-3"><i class="fa-solid fa-envelope-open-text"></i> عرض الشكاوى</button>
+                <div id="adminMenu" class="hidden space-y-2">
+                    <button onclick="showPage('admin-panel')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-users-gear"></i> إدارة الطلاب</button>
+                    <button onclick="showPage('tab-lessons')" class="nav-btn w-full text-right p-4 rounded-xl flex items-center gap-3 hover:bg-white/5"><i class="fa-solid fa-plus-circle"></i> إضافة محتوى</button>
                 </div>
-                <button onclick="logout()" class="w-full text-right p-3 flex items-center gap-3 text-red-400 mt-10"><i class="fa-solid fa-power-off"></i> خروج</button>
+                <button onclick="logout()" class="w-full text-right p-4 rounded-xl flex items-center gap-3 text-red-400 mt-10 hover:bg-red-500/10"><i class="fa-solid fa-power-off"></i> خروج</button>
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar relative">
             
             <section id="landing" class="page-content">
                 <div class="text-center mb-12">
-                    <h2 class="text-4xl font-black mb-4">لماذا تختار <span class="text-orange-500 underline">الشهد؟</span></h2>
-                    <p class="text-slate-400">نحن لا نقدم مجرد دروس، نحن نصنع التفوق</p>
+                    <h2 class="text-3xl md:text-5xl font-black mb-4">لماذا تختار <span class="text-orange-500">الشهد؟</span></h2>
+                    <p class="text-slate-400 font-bold">منصة تعليمية ذكية تضعك على طريق القمة</p>
                 </div>
                 <div class="grid md:grid-cols-3 gap-6">
-                    <div class="glass p-8 rounded-[2rem] text-center border-b-4 border-orange-500">
-                        <i class="fa-solid fa-laptop-code text-4xl text-orange-500 mb-4"></i>
+                    <div class="glass p-8 rounded-[2.5rem] text-center border-t-4 border-orange-500 hover:scale-105 transition">
+                        <i class="fa-solid fa-laptop-code text-5xl text-orange-500 mb-4"></i>
                         <h3 class="text-xl font-bold mb-2">حصص إلكترونية</h3>
-                        <p class="text-sm text-slate-400">شرح تفاعلي بجودة 4K متاح لك في أي وقت ومن أي مكان.</p>
+                        <p class="text-slate-400 text-sm">شرح تفاعلي بأحدث الوسائل التعليمية متاح لك 24 ساعة.</p>
                     </div>
-                    <div class="glass p-8 rounded-[2rem] text-center border-b-4 border-blue-500">
-                        <i class="fa-solid fa-vial-circle-check text-4xl text-blue-500 mb-4"></i>
+                    <div class="glass p-8 rounded-[2.5rem] text-center border-t-4 border-blue-500 hover:scale-105 transition">
+                        <i class="fa-solid fa-vial-circle-check text-5xl text-blue-500 mb-4"></i>
                         <h3 class="text-xl font-bold mb-2">اختبارات تفاعلية</h3>
-                        <p class="text-sm text-slate-400">تقييم مستمر بعد كل حصة لضمان فهمك العميق للمنهج.</p>
+                        <p class="text-slate-400 text-sm">بنك أسئلة ضخم وتصحيح تلقائي لتقييم مستواك فوراً.</p>
                     </div>
-                    <div class="glass p-8 rounded-[2rem] text-center border-b-4 border-purple-500">
-                        <i class="fa-solid fa-award text-4xl text-purple-500 mb-4"></i>
+                    <div class="glass p-8 rounded-[2.5rem] text-center border-t-4 border-purple-500 hover:scale-105 transition">
+                        <i class="fa-solid fa-shield-heart text-5xl text-purple-500 mb-4"></i>
                         <h3 class="text-xl font-bold mb-2">خبرة عالية</h3>
-                        <p class="text-sm text-slate-400">تحت إشراف المستر محمد عبد العزيز بخبرة سنوات في التفوق.</p>
+                        <p class="text-slate-400 text-sm">تحت إشراف المستر محمد عبد العزيز بخبرة سنوات في التميز.</p>
                     </div>
                 </div>
             </section>
 
-            <section id="loginSec" class="page-content hidden max-w-md mx-auto">
-                <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
-                    <h2 class="text-2xl font-bold mb-6 text-center text-orange-500">تسجيل الدخول</h2>
-                    <input type="text" id="u" placeholder="اسم المستخدم" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl mb-4 outline-none">
-                    <input type="password" id="p" placeholder="كلمة المرور" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl mb-6 outline-none">
-                    <button onclick="login()" class="w-full bg-orange-600 py-4 rounded-2xl font-bold">دخول</button>
+            <section id="loginSec" class="page-content hidden max-w-md mx-auto py-10">
+                <div class="glass p-8 rounded-[3rem] shadow-2xl border border-white/10">
+                    <h2 class="text-center text-2xl font-black mb-8">تسجيل الدخول</h2>
+                    <div class="space-y-4">
+                        <input type="text" id="u" placeholder="اسم المستخدم" class="w-full bg-slate-900/50 p-4 rounded-2xl outline-none focus:ring-2 ring-orange-500 border border-white/5">
+                        <input type="password" id="p" placeholder="كلمة المرور" class="w-full bg-slate-900/50 p-4 rounded-2xl outline-none focus:ring-2 ring-orange-500 border border-white/5">
+                        <button onclick="login()" class="w-full bg-orange-600 hover:bg-orange-500 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-orange-600/20 transition">دخول للمنصة</button>
+                    </div>
                 </div>
             </section>
 
             <section id="tab-lessons" class="page-content hidden">
-                <div id="videoPlayer" class="hidden mb-8 glass p-4 rounded-3xl">
-                    <button onclick="closeVideo()" class="text-red-500 mb-2 font-bold"><i class="fa-solid fa-circle-xmark"></i> إغلاق المشغل</button>
-                    <div class="video-container" id="videoIframe"></div>
+                <div id="videoArea" class="hidden mb-10">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 id="currentVidTitle" class="font-bold text-orange-500"></h3>
+                        <button onclick="closeVideo()" class="bg-red-500 px-3 py-1 rounded-lg text-xs"><i class="fa-solid fa-times"></i> إغلاق</button>
+                    </div>
+                    <div class="video-container" id="player"></div>
                 </div>
                 <div id="lessonsGrid" class="grid md:grid-cols-3 gap-6"></div>
             </section>
 
-            <section id="tab-profile" class="page-content hidden max-w-md mx-auto">
-                <div class="glass p-10 rounded-[3rem] text-center border-t-4 border-orange-500">
-                    <div class="w-24 h-24 bg-orange-500 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-black" id="p-initial"></div>
-                    <h2 id="p-name" class="text-2xl font-black mb-1"></h2>
-                    <p id="p-group" class="text-slate-400 mb-6 font-bold"></p>
-                    <div class="bg-slate-900/50 p-6 rounded-3xl">
-                        <p class="text-orange-500 text-sm font-bold">ترتيبك على المنصة</p>
-                        <p id="p-rank" class="text-4xl font-black mt-2"></p>
+            <section id="tab-profile" class="page-content hidden max-w-lg mx-auto">
+                <div class="glass p-8 rounded-[3rem] text-center relative overflow-hidden">
+                    <div class="w-24 h-24 bg-orange-600 rounded-full mx-auto flex items-center justify-center text-4xl font-black mb-4 shadow-xl" id="prof-char"></div>
+                    <h2 id="prof-name" class="text-2xl font-black"></h2>
+                    <p id="prof-group" class="text-slate-400 mb-6"></p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p class="text-xs text-slate-500 uppercase">الترتيب الحالي</p>
+                            <p id="prof-rank" class="text-2xl font-black text-orange-500"></p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <p class="text-xs text-slate-500 uppercase">الحالة</p>
+                            <p class="text-sm font-bold text-green-400">نشط</p>
+                        </div>
                     </div>
                 </div>
             </section>
-            
-            </main>
+
+        </main>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9Asx1DSSVaOazZizvIIwI6pgTWjUOqnqtm_tK6BvsO7j4Y57zGzgfcB_uR4Dh8HnF/exec";
+        const SCRIPT_URL = "انشر_رابط_الويب_هنا"; // ضع رابط الـ Web App الخاص بك هنا
         let currentUser = null;
 
-        // 1. خاصية حفظ الجلسة
+        // نظام حفظ الجلسة
         window.onload = () => {
-            const saved = localStorage.getItem('alshahd_session');
+            const saved = localStorage.getItem('alshahd_user');
             if(saved) {
                 currentUser = JSON.parse(saved);
-                initAuthUI();
+                initAuth();
             } else { showPage('landing'); }
         };
 
         async function login() {
             const u = document.getElementById('u').value;
             const p = document.getElementById('p').value;
-            // API Call
+            if(!u || !p) return alert("املاً البيانات");
+            
             const res = await fetch(`${SCRIPT_URL}?action=login&u=${u}&p=${p}`);
             const data = await res.json();
+            
             if(data.status === 'success') {
                 currentUser = data.user;
-                localStorage.setItem('alshahd_session', JSON.stringify(currentUser));
-                initAuthUI();
-            } else { alert("خطأ في البيانات"); }
+                localStorage.setItem('alshahd_user', JSON.stringify(currentUser));
+                initAuth();
+            } else { alert("خطأ في اليوزر أو الباسورد"); }
         }
 
-        function initAuthUI() {
+        function initAuth() {
             document.getElementById('guestLinks').classList.add('hidden');
             document.getElementById('authLinks').classList.remove('hidden');
             document.getElementById('userBadge').classList.remove('hidden');
             document.getElementById('userNameDisplay').innerText = currentUser.name;
             
-            // تخصيص الأقسام
-            document.querySelectorAll('.admin-only').forEach(e => e.style.display = currentUser.role === 'admin' ? 'block' : 'none');
-            document.querySelectorAll('.student-only').forEach(e => e.style.display = currentUser.role === 'admin' ? 'none' : 'block');
-            
-            // بيانات الحساب
-            document.getElementById('p-name').innerText = currentUser.name;
-            document.getElementById('p-group').innerText = currentUser.group;
-            document.getElementById('p-rank').innerText = "#" + (currentUser.rank || '0');
-            document.getElementById('p-initial').innerText = currentUser.name[0];
-
+            if(currentUser.role === 'admin') {
+                document.getElementById('adminMenu').classList.remove('hidden');
+            } else {
+                document.getElementById('studentMenu').classList.remove('hidden');
+                // تحديث بيانات الملف الشخصي
+                document.getElementById('prof-name').innerText = currentUser.name;
+                document.getElementById('prof-char').innerText = currentUser.name[0];
+                document.getElementById('prof-rank').innerText = "#" + (currentUser.rank || '0');
+                document.getElementById('prof-group').innerText = currentUser.group || 'عام';
+            }
             showPage('tab-lessons');
-            loadData();
+            loadContent();
         }
 
-        // 2. العرض داخل المنصة (Embed)
-        function playVideo(url, title) {
+        async function loadContent() {
+            const res = await fetch(`${SCRIPT_URL}?action=getData`);
+            const data = await res.json();
+            
+            const grid = document.getElementById('lessonsGrid');
+            grid.innerHTML = data.lessons.map(l => {
+                const id = l[1].split('v=')[1] || l[1].split('/').pop();
+                return `
+                    <div class="glass p-4 rounded-[2rem] group cursor-pointer border border-white/5 hover:border-orange-500/50 transition" onclick="playInternal('${l[1]}', '${l[0]}')">
+                        <img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" class="w-full rounded-2xl mb-4">
+                        <h4 class="font-bold px-2 line-clamp-1">${l[0]}</h4>
+                        <div class="mt-4 flex items-center justify-between px-2">
+                             <span class="text-[10px] bg-orange-500/20 text-orange-500 px-2 py-1 rounded">فيديو تفاعلي</span>
+                             <i class="fa-solid fa-circle-play text-2xl text-orange-500 opacity-0 group-hover:opacity-100 transition"></i>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function playInternal(url, title) {
             const vidId = url.split('v=')[1] || url.split('/').pop();
-            const player = document.getElementById('videoPlayer');
-            const iframe = document.getElementById('videoIframe');
-            player.classList.remove('hidden');
-            iframe.innerHTML = `<iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" frameborder="0" allowfullscreen></iframe>`;
-            player.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('videoArea').classList.remove('hidden');
+            document.getElementById('currentVidTitle').innerText = title;
+            document.getElementById('player').innerHTML = `<iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            document.getElementById('videoArea').scrollIntoView({behavior: 'smooth'});
+            
+            // تسجيل المشاهدة في الباك اند
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({action: 'markLessonWatched', title, user: currentUser.user}) });
         }
 
         function closeVideo() {
-            document.getElementById('videoPlayer').classList.add('hidden');
-            document.getElementById('videoIframe').innerHTML = "";
+            document.getElementById('videoArea').classList.add('hidden');
+            document.getElementById('player').innerHTML = "";
         }
 
         function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-link'));
-            // Sidebar Toggle on mobile
+            // تحديث حالة الروابط في الـ Sidebar
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-link'));
+            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(id));
+            if(activeBtn) activeBtn.classList.add('active-link');
+            
             if(window.innerWidth < 768) toggleSidebar();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
         }
 
         function logout() {
             localStorage.clear();
             location.reload();
-        }
-
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-
-        async function loadData() {
-            const res = await fetch(SCRIPT_URL + "?action=getData");
-            const data = await res.json();
-            renderLessons(data.lessons);
-        }
-
-        function renderLessons(lessons) {
-            const grid = document.getElementById('lessonsGrid');
-            grid.innerHTML = lessons.map(l => `
-                <div class="glass p-4 rounded-[2rem] group cursor-pointer" onclick="playVideo('${l[1]}', '${l[0]}')">
-                    <img src="https://img.youtube.com/vi/${l[1].split('v=')[1] || l[1].split('/').pop()}/mqdefault.jpg" class="rounded-2xl mb-4 w-full">
-                    <h3 class="font-bold px-2">${l[0]}</h3>
-                    <button class="mt-4 w-full bg-white/5 py-2 rounded-xl text-xs group-hover:bg-orange-600 transition">بدء المشاهدة داخل المنصة</button>
-                </div>
-            `).join('');
         }
     </script>
 </body>
