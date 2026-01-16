@@ -3,241 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أكاديمية الشهد | المنصة الذكية</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
-        .active-tab { border-bottom: 4px solid #f97316; color: #f97316; }
-        .admin-only { display: none; }
-        .student-only { display: none; }
-        .loader { border-top-color: #f97316; animation: spinner 1.5s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+    <title>منصة الشهد | التعليم الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950">
+<body>
 
-    <div id="loading" class="fixed inset-0 z-[5000] bg-slate-950 flex flex-col items-center justify-center hidden">
-        <div class="loader w-12 h-12 border-4 border-slate-700 border-t-orange-500 rounded-full mb-4"></div>
-        <p class="text-orange-500 font-bold animate-pulse">جاري تحديث المنصة...</p>
-    </div>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://i.postimg.cc/qBNWWK9h/file-00000000b6f0724699170c32f51055fb-(1).png" alt="Logo">
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li class="active" onclick="showSection('home')"><i class="fa-solid fa-house"></i> الرئيسية</li>
+            <li onclick="showSection('login')"><i class="fa-solid fa-user-lock"></i> دخول الطلاب</li>
+            <li onclick="showSection('contact')"><i class="fa-solid fa-phone-volume"></i> تواصل معنا</li>
+        </ul>
+    </nav>
 
-    <header class="py-8 flex flex-col items-center glass border-b border-white/5 mb-8">
-        <img src="https://i.postimg.cc/qBNWWK9h/file-00000000b6f0724699170c32f51055fb-(1).png" alt="Logo" class="w-48 md:w-64 mb-4 hover:scale-105 transition duration-500">
-        <h1 class="text-2xl font-black italic">أكاديمية <span class="text-orange-500">الشهد</span></h1>
-    </header>
+    <main class="main-area">
+        <header class="top-nav">
+            <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
+            <div class="user-profile" id="userDisplay">مرحباً بك في الشهد</div>
+        </header>
 
-    <main class="max-w-6xl mx-auto px-4 pb-20">
-
-        <section id="loginSec" class="max-w-md mx-auto mt-10">
-            <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
-                <h2 class="text-center text-2xl font-bold mb-6">تسجيل الدخول</h2>
-                <input type="text" id="userInp" placeholder="اسم المستخدم" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl mb-4 focus:border-orange-500 outline-none">
-                <input type="password" id="passInp" placeholder="كلمة المرور" class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl mb-6 focus:border-orange-500 outline-none">
-                <button onclick="login()" class="w-full bg-orange-600 hover:bg-orange-500 py-4 rounded-2xl font-bold text-lg transition">دخول للمنصة</button>
-            </div>
-        </section>
-
-        <section id="dashboard" class="hidden">
-            <div id="nav" class="flex justify-center gap-4 mb-8 overflow-x-auto py-2 no-scrollbar">
-                </div>
-
-            <div id="tab-users" class="tab-content hidden space-y-6">
-                <div class="glass p-6 rounded-3xl">
-                    <h3 class="text-xl font-bold mb-4 text-orange-500">إضافة طالب جديد</h3>
-                    <div class="grid md:grid-cols-3 gap-4">
-                        <input id="new_name" type="text" placeholder="الاسم الكامل" class="bg-slate-900 p-3 rounded-xl border border-white/10">
-                        <input id="new_user" type="text" placeholder="اسم المستخدم" class="bg-slate-900 p-3 rounded-xl border border-white/10">
-                        <input id="new_pass" type="text" placeholder="كلمة المرور" class="bg-slate-900 p-3 rounded-xl border border-white/10">
-                        <button onclick="api('addUser')" class="bg-green-600 p-3 rounded-xl font-bold">حفظ الطالب</button>
-                    </div>
-                </div>
-                <div class="glass p-6 rounded-3xl overflow-x-auto">
-                    <table class="w-full text-right">
-                        <thead><tr class="border-b border-white/10 text-slate-400"><th class="p-3">الطالب</th><th>الحالة</th><th>الترتيب</th><th>إجراء</th></tr></thead>
-                        <tbody id="usersList"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tab-lessons" class="tab-content hidden">
-                <div class="admin-only glass p-6 rounded-3xl mb-8">
-                    <h3 class="text-xl font-bold mb-4">نشر حصة جديدة</h3>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <input id="less_title" type="text" placeholder="عنوان الدرس" class="bg-slate-900 p-3 rounded-xl border border-white/10">
-                        <input id="less_url" type="text" placeholder="رابط يوتيوب" class="bg-slate-900 p-3 rounded-xl border border-white/10">
-                        <button onclick="api('addLesson')" class="bg-orange-600 p-3 rounded-xl font-bold md:col-span-2">نشر الآن</button>
-                    </div>
-                </div>
-                <div id="lessonsGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
-
-            <div id="tab-exams" class="tab-content hidden">
-                <div class="admin-only glass p-6 rounded-3xl mb-8">
-                    <h3 class="text-xl font-bold mb-4">إضافة اختبار Microsoft Forms</h3>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <input id="exam_title" type="text" placeholder="اسم الاختبار" class="bg-slate-900 p-3 rounded-xl border border-white/10">
-                        <input id="exam_url" type="text" placeholder="رابط الفورم" class="bg-slate-900 p-3 rounded-xl border border-white/10">
-                        <button onclick="api('addExam')" class="bg-purple-600 p-3 rounded-xl font-bold md:col-span-2">إضافة الاختبار</button>
-                    </div>
-                </div>
-                <div id="examsGrid" class="space-y-4"></div>
-            </div>
-
-            <div id="tab-rank" class="tab-content hidden max-w-2xl mx-auto">
-                <h2 class="text-3xl font-black text-center mb-8">أبطال <span class="text-orange-500">الأكاديمية</span></h2>
-                <div id="rankingList" class="space-y-4"></div>
-            </div>
-
-            <div id="tab-complaints" class="tab-content hidden">
-                <div class="student-only glass p-8 rounded-[2.5rem] max-w-lg mx-auto text-center">
-                    <h2 class="text-2xl font-bold mb-4">هل لديك شكوى أو مقترح؟</h2>
-                    <textarea id="comp_text" rows="4" class="w-full bg-slate-900 rounded-2xl p-4 border border-white/10 outline-none mb-4" placeholder="اكتب ما يدور في ذهنك هنا..."></textarea>
-                    <button onclick="api('sendComplaint')" class="w-full bg-red-600 py-4 rounded-2xl font-bold">إرسال للمستر</button>
-                </div>
-                <div class="admin-only space-y-4" id="complaintsList"></div>
-            </div>
-
-        </section>
-    </main>
-
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOl-vDZ7TibJd-nw2hSjoZwkqwzyuY56OPqdZhxFoh5RpfrvIGKEipmBMMRxkYghEp/exec";
-        let currentUser = null;
-        let allData = {};
-
-        async function login() {
-            toggleLoad(true);
-            const u = document.getElementById('userInp').value;
-            const p = document.getElementById('passInp').value;
-            try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'login', u, p }) });
-                const data = await res.json();
-                if(data.status === 'success') {
-                    currentUser = data.user;
-                    initDashboard();
-                } else if(data.status === 'blocked') { alert(data.msg); }
-                else { alert("بيانات خاطئة"); }
-            } catch(e) { console.error(e); }
-            toggleLoad(false);
-        }
-
-        async function initDashboard() {
-            document.getElementById('loginSec').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            await refreshData();
-            renderNav();
-            showTab('tab-lessons');
-        }
-
-        async function refreshData() {
-            const res = await fetch(SCRIPT_URL + "?action=getData");
-            allData = await res.json();
-            renderContent();
-        }
-
-        function renderNav() {
-            const isAdmin = currentUser.role === 'admin';
-            const nav = document.getElementById('nav');
-            let tabs = `
-                <button onclick="showTab('tab-lessons')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap active-tab">الحصص</button>
-                <button onclick="showTab('tab-exams')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">الاختبارات</button>
-                <button onclick="showTab('tab-rank')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">المتفوقين</button>
-                <button onclick="showTab('tab-complaints')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">${isAdmin ? 'الشكاوى' : 'شكوى'}</button>
-            `;
-            if(isAdmin) tabs = `<button onclick="showTab('tab-users')" class="nav-btn px-6 py-2 font-bold whitespace-nowrap">الطلاب</button>` + tabs;
-            nav.innerHTML = tabs;
-            
-            document.querySelectorAll(isAdmin ? '.admin-only' : '.student-only').forEach(el => el.style.display = 'block');
-        }
-
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-tab'));
-            event.currentTarget.classList.add('active-tab');
-        }
-
-        function renderContent() {
-            // رندر الحصص
-            document.getElementById('lessonsGrid').innerHTML = allData.lessons.map(l => `
-                <div class="glass p-4 rounded-3xl overflow-hidden group">
-                    <div class="relative mb-4 overflow-hidden rounded-2xl aspect-video">
-                        <img src="https://img.youtube.com/vi/${getVidId(l.url)}/mqdefault.jpg" class="w-full object-cover">
-                        <div onclick="openLesson('${l.url}', '${l.title}')" class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition">
-                            <i class="fa-solid fa-play text-4xl"></i>
+        <div id="content">
+            <section id="home" class="section active">
+                <div class="hero-section">
+                    <h1>لماذا تختار منصة الشهد؟</h1>
+                    <div class="features-container">
+                        <div class="feature-card">
+                            <div class="icon-circle"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <h3>الخبرة والتجربة</h3>
+                            <p>نقدم لك خلاصة سنوات من التميز الأكاديمي مع الأستاذ محمد عبد العزيز.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-circle"><i class="fa-solid fa-bolt"></i></div>
+                            <h3>تجربة تفاعلية</h3>
+                            <p>امتحانات ذكية، تصحيح تلقائي، ومنافسة حقيقية بين زملائك.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-circle"><i class="fa-solid fa-chart-line"></i></div>
+                            <h3>متابعة دائمة</h3>
+                            <p>تقارير لحظية لولي الأمر لمتابعة حضور الطالب ودرجاته أولاً بأول.</p>
                         </div>
                     </div>
-                    <h4 class="font-bold">${l.title}</h4>
-                    ${currentUser.role === 'admin' ? `<p class="text-xs text-slate-500 mt-2">شاهده: ${l.viewers.split(',').length - 1} طلاب</p>` : ''}
                 </div>
-            `).join('');
+            </section>
 
-            // رندر الاختبارات
-            document.getElementById('examsGrid').innerHTML = allData.exams.map(e => `
-                <div class="glass p-6 rounded-2xl flex justify-between items-center">
-                    <span class="font-bold">${e.title}</span>
-                    <button onclick="openExam('${e.url}', '${e.title}', '${e.takers}')" class="bg-purple-600 px-6 py-2 rounded-xl text-sm font-bold">دخول</button>
-                </div>
-            `).join('');
-
-            // رندر المتفوقين
-            document.getElementById('rankingList').innerHTML = allData.users
-                .filter(u => u.rank > 0)
-                .sort((a,b) => a.rank - b.rank)
-                .map(u => `
-                    <div class="glass p-4 rounded-2xl flex justify-between items-center border-r-4 ${u.rank == 1 ? 'border-yellow-500' : 'border-orange-500'}">
-                        <span class="font-bold">#${u.rank} - ${u.name}</span>
-                        <span class="text-slate-400 text-sm">${u.group}</span>
+            <section id="login" class="section">
+                <div class="glass-form">
+                    <h2>تسجيل الدخول</h2>
+                    <div class="input-group">
+                        <i class="fa fa-user"></i>
+                        <input type="text" id="username" placeholder="اسم المستخدم">
                     </div>
-                `).join('');
+                    <div class="input-group">
+                        <i class="fa fa-lock"></i>
+                        <input type="password" id="password" placeholder="كلمة المرور">
+                    </div>
+                    <button class="btn-main" onclick="performLogin()">دخول للمنصة</button>
+                </div>
+            </section>
 
-            // رندر الطلاب (للمدير)
-            if(currentUser.role === 'admin') {
-                document.getElementById('usersList').innerHTML = allData.users.map(u => `
-                    <tr class="border-b border-white/5">
-                        <td class="p-3">${u.name}</td>
-                        <td><span class="px-2 py-1 rounded-lg text-xs ${u.status === 'Active' ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'}">${u.status}</span></td>
-                        <td><input type="number" onchange="updateRank('${u.user}', this.value)" value="${u.rank}" class="w-12 bg-slate-900 rounded border border-white/10 text-center"></td>
-                        <td><button onclick="toggleStatus('${u.user}', '${u.status}')" class="text-orange-500"><i class="fa-solid fa-power-off"></i></button></td>
-                    </tr>
-                `).join('');
-            }
-        }
+            <section id="adminDash" class="section">
+                <h2 class="dash-title">لوحة التحكم الإدارية</h2>
+                <div class="admin-grid">
+                    <div class="admin-card">
+                        <h3>إضافة طالب</h3>
+                        <input type="text" id="stName" placeholder="الاسم الكامل">
+                        <input type="text" id="stUser" placeholder="اسم المستخدم">
+                        <input type="text" id="stPass" placeholder="كلمة المرور">
+                        <button onclick="adminAddStudent()">حفظ الطالب</button>
+                    </div>
+                    <div class="admin-card">
+                        <h3>رفع حصة جديدة</h3>
+                        <input type="text" id="lsTitle" placeholder="عنوان الحصة">
+                        <input type="text" id="lsID" placeholder="ID فيديو يوتيوب">
+                        <button onclick="adminAddLesson()">نشر الحصة</button>
+                    </div>
+                </div>
+            </section>
 
-        async function api(action) {
-            toggleLoad(true);
-            let payload = { action };
-            if(action === 'addUser') payload = {...payload, name:v('new_name'), user:v('new_user'), pass:v('new_pass'), group: 'عام'};
-            if(action === 'addLesson') payload = {...payload, title:v('less_title'), url:v('less_url')};
-            if(action === 'addExam') payload = {...payload, title:v('exam_title'), url:v('exam_url')};
-            if(action === 'sendComplaint') payload = {...payload, text:v('comp_text'), user: currentUser.name};
+            <section id="studentZone" class="section">
+                <div class="tabs">
+                    <button onclick="loadStudentLessons()">الحصص المتاحة</button>
+                    <button onclick="loadStudentExams()">الاختبارات</button>
+                </div>
+                <div id="studentContent" class="grid-display"></div>
+            </section>
+        </div>
+    </main>
 
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            await refreshData();
-            toggleLoad(false);
-            alert("تمت العملية بنجاح");
-        }
+    <div id="loader" class="loader"></div>
+    <div id="toast"></div>
 
-        function openExam(url, title, takers) {
-            if(takers.includes(currentUser.user)) {
-                alert("عذراً، قمت بدخول هذا الاختبار مسبقاً.");
-            } else {
-                window.open(url, "_blank");
-                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'markExamTaken', examTitle: title, user: currentUser.user }) });
-            }
-        }
-
-        function openLesson(url, title) {
-            window.open(url, "_blank");
-            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'markLessonWatched', lessonTitle: title, user: currentUser.user }) });
-        }
-
-        function toggleLoad(s) { document.getElementById('loading').classList.toggle('hidden', !s); }
-        function v(id) { return document.getElementById(id).value; }
-        function getVidId(url) { return url.split('v=')[1] || url.split('/').pop(); }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
