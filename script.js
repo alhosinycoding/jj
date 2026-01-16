@@ -1,4 +1,4 @@
-const SCRIPT_URL = "رابط_الـ_WEB_APP_هنا";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziOhw9nc--HnaZNKkLDhbljSZGmMO0c3DzRaGH0-dwQp9xscWUjZQ0xisLspRo59rm/exec";
 
 function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
